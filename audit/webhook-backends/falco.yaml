@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Config
+clusters:
+- name: falco
+  cluster:
+    # Falco UI and pods does not show logs, seems api server can not reach falco pods
+    # server: http://$FALCO_SERVICE_CLUSTERIP:9765/k8s-audit
+    # server: http://falco-k8saudit-webhook.falco.svc:9765/k8s-audit  # /etc/hosts add record for this dns with ClusterIP of service
+    server: http://192.168.0.100:30007/k8s-audit  # added extra port mapping in kind, cilium.yaml
+contexts:
+- name: default-context
+  context:
+    cluster: falco
+    user: ""
+current-context: default-context
+preferences: {}
+users: []

@@ -1,0 +1,57 @@
+# All below 2 option has same meaning
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p1-deny-all-egress
+  namespace: p1
+spec:
+  policyTypes:
+    - Egress
+  # # Recommended to add below rule at least, otherwise DNS resolution for ingress and service names will not be possible
+  # egress:
+  #   # wthout dns rule, DNS resolve for nginx-1 will not be possible and only curl with ip will be allowed
+  #   - to:  # p1/app=curl -> kube-system/app=kube-dns:53
+  #     - namespaceSelector:
+  #         matchLabels:
+  #           networking/namespace: kube-system
+  #       podSelector:
+  #         matchLabels:
+  #           k8s-app: kube-dns
+  #     ports:
+  #     - protocol: TCP
+  #       port: 53
+  #     - protocol: UDP
+  #       port: 53
+  #   # following rule alos useful if you know your VPC range
+  #   - ipBlock:
+  #       cidr: 10.0.0.0/16
+---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: p1-deny-all-egress
+#   namespace: p1
+# spec:
+#   podSelector: {}
+#   policyTypes:
+#     - Egress
+#   # Recommended to add below rule at least
+#   egress:
+#     # wthout dns rule, DNS resolve for nginx-1 will not be possible and only curl with ip will be allowed
+#     - to:  # p1/app=curl -> kube-system/app=kube-dns:53
+#       - namespaceSelector:
+#           matchLabels:
+#             networking/namespace: kube-system
+#         podSelector:
+#           matchLabels:
+#             k8s-app: kube-dns
+#       ports:
+#       - protocol: TCP
+#         port: 53
+#       - protocol: UDP
+#         port: 53
+#     # following rule alos useful if you know your VPC range
+#     - ipBlock:
+#         cidr: 10.0.0.0/16
+

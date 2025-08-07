@@ -1,0 +1,25 @@
+apiVersion: networking.gke.io/v1  # this feature is GKE specific
+kind: HealthCheckPolicy
+metadata:
+  name: myapp1-lb-healthcheck
+  namespace: default
+spec:
+  # setting comes from GCP > Compute > Health Checks
+  default:
+    checkIntervalSec: 5
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    logConfig:
+      enabled: false # To enable provide true
+    config:
+      type: HTTP
+      httpHealthCheck:
+        port: 80
+        requestPath: "/index.html"
+        response: "Welcome"
+  targetRef:
+    # associate above setting with below resource
+    group: ""
+    kind: Service
+    name: myapp1-service

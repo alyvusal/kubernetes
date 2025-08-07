@@ -1,0 +1,15 @@
+# Log create/delete cm in default ns
+---
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+  - level: RequestResponse
+    namespaces: ["default"]
+    users: ["kubernetes-admin"]
+    userGroups: ["kubeadm:cluster-admins", "system:authenticated"]
+    verbs: ["create", "delete"]  # ["get", "watch", "list","create","update", "delete"]
+    resources:
+    - group: ""
+      resources: ["configmaps"]

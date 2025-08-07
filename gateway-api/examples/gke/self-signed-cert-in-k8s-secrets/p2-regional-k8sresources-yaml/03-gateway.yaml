@@ -1,0 +1,41 @@
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: mygateway1-regional
+spec:
+  gatewayClassName: gke-l7-regional-external-managed
+  listeners:
+  - name: https
+    protocol: HTTPS
+    port: 443
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: myssl-secret
+  addresses:
+  - type: NamedAddress
+    value: my-regional-ip1
+
+
+## Documentation ##
+# https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayTLSConfig
+# https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.SecretObjectReference
+
+# Create SSL Cert using Certificate Manager
+# gcloud certificate-manager certificates create "CERTIFICATE_NAME" \
+#     --certificate-file="CERTIFICATE_FILE" \
+#     --private-key-file="PRIVATE_KEY_FILE" \
+#     --location="REGION"
+# Important Note: If no location provided it is global certificate
+
+# # Change Directory
+# cd p2-regional-k8sresources-yaml/self-signed-ssl
+
+# # Create Regional Cert: us-central1
+# gcloud certificate-manager certificates create "app1-us-central1-cert" \
+#     --certificate-file="app1.crt" \
+#     --private-key-file="app1.key" \
+#     --location="us-central1"
+
+# # Regional: List Certificates
+# gcloud certificate-manager certificates list --location us-central1

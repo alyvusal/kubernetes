@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+spec:
+  containers:
+  - name: redis
+    image: redis:5.0.3-alpine
+    resources:
+      requests:
+        cpu: 500m
+        memory: 300Mi
+        ephemeral-storage: "2Gi"
+      limits:
+        cpu: 1
+        memory: 600Mi
+        ephemeral-storage: "4Gi"
+    volumeMounts:
+    - name: ephemeral
+      mountPath: "/tmp"
+  - name: busybox
+    image: busybox
+    command: ["sleep"]
+    args: ["infinity"]
+    resources:
+      limits:
+        cpu: 300m
+        memory: 200Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  volumes:
+    - name: ephemeral
+      emptyDir:
+        sizeLimit: 500Mi

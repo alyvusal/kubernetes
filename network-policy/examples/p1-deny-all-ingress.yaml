@@ -1,0 +1,35 @@
+# All below 4 option has same meaning
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p1-deny-all-ingress
+  namespace: p1
+# no policyTypes means apply to Ingress if no Egress rule
+---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: p1-deny-all-ingress
+#   namespace: p1
+# spec:
+#   podSelector: {}  # selects everything, because no label defined here
+---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: p1-deny-all-ingress
+#   namespace: p1
+# spec:
+#   policyTypes:
+#     - Ingress
+---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: p1-deny-all-ingress
+#   namespace: p1
+# spec:
+#   podSelector: {}  # selects everything, because no label defined here
+#   policyTypes:
+#     - Ingress

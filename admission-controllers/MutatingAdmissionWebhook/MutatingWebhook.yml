@@ -1,0 +1,154 @@
+# The logic of this demo webhook is fairly simple: it enforces more secure defaults for running containers as non-root user.
+# While it is still possible to run containers as root, the webhook ensures that this is only possible if the setting
+# runAsNonRoot is explicitly set to false in the securityContext of the Pod. If no value is set for runAsNonRoot,
+# a default of true is applied, and the user ID defaults to 1234.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: webhook-demo
+---
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURqakNDQW5hZ0F3SUJBZ0lVTkhWeS9Kb0NwdE1JNThmME5vZ0VVdjQ5U0lNd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0x6RXRNQ3NHQTFVRUF3d2tRV1J0YVhOemFXOXVJRU52Ym5SeWIyeHNaWElnVjJWaWFHOXZheUJFWlcxdgpJRU5CTUI0WERUSXpNVEl6TURFME1EY3lNRm9YRFRJME1ERXlPVEUwTURjeU1Gb3dLakVvTUNZR0ExVUVBd3dmCmQyVmlhRzl2YXkxelpYSjJaWEl1ZDJWaWFHOXZheTFrWlcxdkxuTjJZekNDQVNJd0RRWUpLb1pJaHZjTkFRRUIKQlFBRGdnRVBBRENDQVFvQ2dnRUJBTGxlWUdvellvTUQ1dmFIUUdLbFh5Q3lTa3hSMGlMeEZtTzkraU9tS1ZBawoyQ1d2Q3BGU2x5L2lBOEJPbW5tRXNWMGErano2S1hOYTYzbUx3eS9RdElmTGdNM0R2WjRxVkdWeUt4M1FiOFRYCmVIYjRPY1Y2QjdCZ2lVbk1mT0svMFhuWFU5SDJIeWtaRmltWDhiSFlUaU10enlObk8xM1puK01pREd1S3RVaVcKY0FFQ3BuaHpTNUE3KzFMcU4zZ0U0ZUN4Znc4WkVIdklxZ2hOeFlyU3pvN1djK1RHWVBQNUVqd0s5REYvb0x2ZApmVjRNWHhuODFFMW8wRDZXSGpsQ3V3NWtTL0JzbW8xMkJRZzEvZmlnS1k1ZjhCRUdBeTQrU3gwWE5jbkQ4QWJVCkRVWENscVZRZUtueFBGSjFKV0JVM1N6amtuVGdkUEtKYjNJeWhTWUhQZUVDQXdFQUFhT0JwakNCb3pBSkJnTlYKSFJNRUFqQUFNQXNHQTFVZER3UUVBd0lGNERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3S2dZRFZSMFJCQ013SVlJZmQyVmlhRzl2YXkxelpYSjJaWEl1ZDJWaWFHOXZheTFrWlcxdkxuTjJZekFkCkJnTlZIUTRFRmdRVWd6YnhvcjBaczV5cGVPRW00ZG02cjg1ZnlJNHdId1lEVlIwakJCZ3dGb0FVbWhSaCtTWjUKM1RMUDFMVHdyU1o2K3Y2T2xBMHdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBTWYwZ1NJTmU1V2FOTXZ4dGJaYQpqL01Pc2FLUGNxVmdTdEdsWHhQdFNQRWZKVWNCbHNCSFdWVkxMT1hSbFg2KzV6N3c4dzFzNmpzT3NSR0pwNEdFCkcwVXRIQlYvRW1hNWo4QUU1Q004OThxVFU5RXhycFdDY1NBNjNpL25Gci9YV2VIQ1pRVEtDNkltMFQ5eWFzMVgKY3g1bktXbUhHa2ZJZStCdzBoOFlwTG9LSW0va3cwQ0tHNFRDYWhVN1I0RktheVVRdnJWem5QZ3FZRG14cjkrSwpHT1FHajAyblJYU2ptSVJjR0dNWXZHZktPTEYwZ3RUU2tTcC8rMkkvRHNmM21nMUF1VU9CQ0Irak9BcHJMcXAyCmQxaG8wSjUzU2hwYzByZ2w1UFUvempvRWZEc3dYVnZIMTRuVTd2ak5LZTJKMDE3a2Rxc2NKUU96MDJhUDlucUcKZm5VPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRQzVYbUJxTTJLREErYjIKaDBCaXBWOGdza3BNVWRJaThSWmp2Zm9qcGlsUUpOZ2xyd3FSVXBjdjRnUEFUcHA1aExGZEd2bzgraWx6V3V0NQppOE12MExTSHk0RE53NzJlS2xSbGNpc2QwRy9FMTNoMitEbkZlZ2V3WUlsSnpIeml2OUY1MTFQUjloOHBHUllwCmwvR3gyRTRqTGM4alp6dGQyWi9qSWd4cmlyVklsbkFCQXFaNGMwdVFPL3RTNmpkNEJPSGdzWDhQR1JCN3lLb0kKVGNXSzBzNk8xblBreG1EeitSSThDdlF4ZjZDNzNYMWVERjhaL05STmFOQStsaDQ1UXJzT1pFdndiSnFOZGdVSQpOZjM0b0NtT1gvQVJCZ011UGtzZEZ6WEp3L0FHMUExRndwYWxVSGlwOFR4U2RTVmdWTjBzNDVKMDRIVHlpVzl5Ck1vVW1CejNoQWdNQkFBRUNnZ0VBQitCWjZRdE94MVc5TEtxYnJwRmJxdGxPaVVLRkF2ZHk0Y2sweWFyZDJLWWYKSWM5SHEvdjZHUGFSM1p3TmFlWk1yY0hIb2h1SVV6cW8xS0xlMTk5V3EybzNDbTh6dFhhem5EV2pIYjdCZ0FmKwppaklURE5nNS8wbGp6ZjBralpNMFZyaXl1dUk2Q2RwVE4vQlpESXN1QzBZL0ZlQlZIRUJTOEJFT1hXdXc5eUQ4ClJVYmwxQWY2eXNaOVpKbm5SeXlsZ0MzTzFNNUt6ZWlZS1d4cjJrdGt0ZzZSekV1TExiS1NLU28wSzVTTFBwc2cKVi8rV294d3Q2YTh4WUE5eG5wMWRvOGxIVjBtQ2NrS3kvbkl1R1dUUEFUSUYvNmtuVkc3YitDdXpFVVB4MGR2Lwp5dmNCaFJIYjcxQXdVZTFvMHcyNlJrRXoySlpLb3E2K1NkVzdCdVZ4c1FLQmdRRGFUZ2NtdnEvVSt1TGFnRVQvCm5Hb29aQWtDVXFPbW1NRzZLMDQ4V1FZVXZ0WmVkUW1BNnVHZ1Nkekp3T0pjZ242cGkxVUNpdWlkdWRTclNIb1oKeDl3VmpwM01ZaXY5bEpSaFgzeDJmZWdGRi9LVUVGaHpOeWNuVkladFd6RENYUFJHYnJnRFZnNmdnMXIzUnpSYgpQd2V4cGpJbnZialZCZXd4S2xTVWhjTXg4UUtCZ1FEWllHK0RLQmZRb1RGZ0cvTmFpeExoUTJjTVp5S1JVQW5KClBxWjhqU2Fzb3V3a2FTYUpEc3dRSFhzZktHOHQxaWRuT1RoYys2cXQvdzNONC8rVklib0JPaE54ejhkWWhaQXIKcFlsL0p4M0NSS0hlYWN5RzM0NUtyMVVGM2thdkJmRllOeWdoL0YwUHM1MlNYV0RjcUZyeVlZYXpJdTU5N2VhaQp5SUFIRHA3YThRS0JnSGR0U25KQ3paU1pjRE9UQ3F3LzJMK2lBbCszNy9sN0JqaWY2bHdQWThsRG9hanBKRHJYCnhIbFpEeVY4bFJtQTltUXdhbUJLdC9sWnFXUE84YVZhOWljQTc0alppREZnOEUvWTJoRkV6Z0xEV0J6eVdFRW4Kd2c2OUtoRjNXdFJwMytVTU96VHdCbTUvamV0TGsvUDdKbTFrZTNuTVMrcVdJK0c5dzZuQkI4a3hBb0dBRWM0TQpWRG5jZVlJNmdSekkrZ21hS2tsVEQza0RJOVBpZVZGZ1lhTk9INlhZb2NMYkhTN1JHQ0RTRE9OSzkvNHFqQkhyCncvSDVNUGRMTWlvU3JTeHVCOXV4N0FpUTAzZGRMN1lIWlJyWEhTcHg5NzNDdXVsa3hrbEdOWXpYVFU2M1RmcDIKbHhJTXJWU1ErNFFhZ3Zobk9xTXlYVW5uTHZsbGdyL1pmTHA5MklFQ2dZRUFwSHhrc0hpZ29INHlQZTRnakFuVwpMSmtkNTBQbmVuOEJId3F3cnhiWnlLVGtGUlhmUjkzYXFMOHB2Vkk3V1V1bE9aVkk5YkhVbVR4YzNNdmZVMGl4Cmo0TkxTOTB6d0JWN3RJaG1WeExjbEZGWUU5TXo2ZEwwUlRQc3pqaEJLaVlocHJuZERzRXBwMWlKbllWMnpPRnIKMHVNU3NobWlpNGxqOWlTQXd2bC9ocXM9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: webhook-server-tls
+  namespace: webhook-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webhook-server
+  name: webhook-server
+  namespace: webhook-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook-server
+  template:
+    metadata:
+      labels:
+        app: webhook-server
+    spec:
+      containers:
+      - image: stackrox/admission-controller-webhook-demo:latest
+        imagePullPolicy: Always
+        name: server
+        ports:
+        - containerPort: 8443
+          name: webhook-api
+        volumeMounts:
+        - mountPath: /run/secrets/tls
+          name: webhook-tls-certs
+          readOnly: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1234
+      volumes:
+      - name: webhook-tls-certs
+        secret:
+          secretName: webhook-server-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-server
+  namespace: webhook-demo
+spec:
+  ports:
+  - port: 443
+    targetPort: webhook-api
+  selector:
+    app: webhook-server
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: demo-webhook
+webhooks:
+- name: webhook-server.webhook-demo.svc
+  admissionReviewVersions: ["v1", "v1beta1"]
+  failurePolicy: Fail
+  sideEffects: None
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURQekNDQWllZ0F3SUJBZ0lVUk45dVA5VEtEdWNlOEg5MEZ0MCs1ZW9WYWtzd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0x6RXRNQ3NHQTFVRUF3d2tRV1J0YVhOemFXOXVJRU52Ym5SeWIyeHNaWElnVjJWaWFHOXZheUJFWlcxdgpJRU5CTUI0WERUSXpNVEl6TURFME1EY3lNRm9YRFRJME1ERXlPVEUwTURjeU1Gb3dMekV0TUNzR0ExVUVBd3drClFXUnRhWE56YVc5dUlFTnZiblJ5YjJ4c1pYSWdWMlZpYUc5dmF5QkVaVzF2SUVOQk1JSUJJakFOQmdrcWhraUcKOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTBjcWd1R0lYUzhsZlpQM1UydW5vSWpJVi84dVQvVW9wUlBaYgpPNzJKeW45MENhZzhoMlVtNVE5cGo5cG9jK0pSaUwrUXF1TmdsTkF0b2g2UzdFZ05zaWt3NWEySFN0S0RnRTFkCmZyTThwbDYwaUt6ZnVPay9QZWpNeHdLSlVDS0NTN1J4MnVucWVYNmJXeTZLQlVTVmNDZzdjVHBMRjd5WW1QSHEKL1loLzNSUStlZzBDamF4OXNqYVlZQkJMWFgzVjliYStDOFJOc3hrTS80RU42cTYxL1ZNR1JZdHJ1TS9OZm5tYQpDNDF3T0J2TEY5L3RxY2NsRnYrZ3VZV1BjcHZIYTNYalA5dEdHTmFoNHpDUXVxZ1NkK0Zkam0xemVsZG93eWZqCkRUYmQ4ZS96M0l4djJmSk82QkhHRDgyQmhFTStDT2Q0Z2hJSWhPWUhQOUluYzBIdDZ3SURBUUFCbzFNd1VUQWQKQmdOVkhRNEVGZ1FVbWhSaCtTWjUzVExQMUxUd3JTWjYrdjZPbEEwd0h3WURWUjBqQkJnd0ZvQVVtaFJoK1NaNQozVExQMUxUd3JTWjYrdjZPbEEwd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTkJna3Foa2lHOXcwQkFRc0ZBQU9DCkFRRUF2anlvSnl0M2Q3S3dzRkltd1dFdStNeTVkY0pOOWVza2g0MVVDeWkyYVhmcW5sV1lYb3NDL1d2ZndNdkUKVGpQaUVXWnpJZzhqTmFxZCtGM25qYWxUSjNoaXRGUUphYStMa2lyZUkxR2s1ZWswMUxFVzR0enBESmRuVG1PSwpiNndNRE5JT3AvVHNwTjk2L2Nqa3NqRWoxN2RhKzk5a1JOUUpoYm8vblFkQ2NrU1U4RmxlWC9wRFJhWitUR3BFCjNKQ2loUE1oWWVRT0RaUTdCVGVNRXZzMCtDRGtKaHZqWHhQMUpnbGNOamRQektJNHNDRUdCUmUvNzZKRGFlZXIKTFYyMHZyUU5aR1NSa09QMG5tMlZXMFV2SWZJcVZ4WlQ3UXNoWXpzRFAxV1Q1am4xQS94bTBaMVlURHZNdzl6UQpiWHJLekQ3eUdhSFp6R0JtNWlnakFnK1JLZz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+      name: webhook-server
+    service:
+      namespace: webhook-demo
+      path: /mutate
+  rules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["pods"]
+    - apiGroups: ["apps"]
+      apiVersions: ["*"]
+      operations: ["CREATE"]
+      resources: ["deployments"]
+
+# A pod with a conflicting securityContext setting: it has to run as a non-root
+# user, but we explicitly request a user id of 0 (root).
+# Without the webhook, the pod could be created, but would be unable to launch
+# due to an unenforceable security context leading to it being stuck in a
+# `CreateContainerConfigError` status. With the webhook, the creation of
+# the pod is outright rejected.
+# ---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: pod-with-conflict
+#   namespace: webhook-demo
+#   labels:
+#     app: pod-with-conflict
+# spec:
+#   restartPolicy: OnFailure
+#   securityContext:
+#     runAsNonRoot: true
+#     runAsUser: 0
+#   containers:
+#     - name: busybox
+#       image: busybox
+#       command: ["sh", "-c", "echo I am running as user $(id -u)"]
+
+# A pod with no securityContext specified.
+# Without the webhook, it would run as user root (0). The webhook mutates it
+# to run as the non-root user with uid 1234.
+# ---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: pod-with-defaults
+#   namespace: webhook-demo
+#   labels:
+#     app: pod-with-defaults
+# spec:
+#   restartPolicy: OnFailure
+#   containers:
+#     - name: busybox
+#       image: busybox
+#       command: ["sh", "-c", "echo I am running as user $(id -u)"]
+
+# A pod with a securityContext explicitly allowing it to run as root.
+# The effect of deploying this with and without the webhook is the same. The
+# explicit setting however prevents the webhook from applying more secure
+# defaults.
+# ---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: pod-with-override
+#   namespace: webhook-demo
+#   labels:
+#     app: pod-with-override
+# spec:
+#   restartPolicy: OnFailure
+#   securityContext:
+#     runAsNonRoot: false
+#   containers:
+#     - name: busybox
+#       image: busybox
+#       command: ["sh", "-c", "echo I am running as user $(id -u)"]

@@ -1,0 +1,25 @@
+apiVersion: v1
+data:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIBeDCCAR2gAwIBAgIBADAKBggqhkjOPQQDAjAjMSEwHwYDVQQDDBhrM3Mtc2Vy
+    dmVyLWNhQDE3NDYwOTE5NjAwHhcNMjUwNTAxMDkzMjQwWhcNMzUwNDI5MDkzMjQw
+    WjAjMSEwHwYDVQQDDBhrM3Mtc2VydmVyLWNhQDE3NDYwOTE5NjAwWTATBgcqhkjO
+    PQIBBggqhkjOPQMBBwNCAAQhxjWqhFRyBci3F7Yn1ead5Fg/cjXpgQYBCMuYmuUL
+    gxq5YjDhiilgCSMFfZs1+npaj8kCjKnbxK4jwiKC5uTVo0IwQDAOBgNVHQ8BAf8E
+    BAMCAqQwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUsoKqntLvWxEaHrlBIR7x
+    x1/X19wwCgYIKoZIzj0EAwIDSQAwRgIhALmOTrgasJ0t9PAFya1SIHhGXYJuYVgp
+    eMBlnSIanR8FAiEA2a33SZyLaAbFXEJ0fF8GVZqTA0gLsOdLZUYr45UVdyY=
+    -----END CERTIFICATE-----
+kind: ConfigMap
+metadata:
+  annotations:
+    kubernetes.io/description: Contains a CA bundle that can be used to verify the
+      kube-apiserver when using internal endpoints such as the internal service IP
+      or kubernetes.default.svc. No other usage is guaranteed across distributions
+      of Kubernetes clusters.
+  creationTimestamp: "2025-05-01T09:32:48Z"
+  name: kube-root-ca.crt
+  namespace: kube-system
+  resourceVersion: "395"
+  uid: ee98f2d9-9b8c-4cf0-869e-1c1bb2b0ba3a

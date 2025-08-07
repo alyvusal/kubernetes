@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: network-policy
+  namespace: default  # rules will be actual for this namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: pod2
+  # If this field is not specified, it will default based on the existence of ingress or gress rules
+  # ingress will always be set and Egress will be sets if the NetworkPolicy has any egress rules (empty [] egress means no rule there, and deny rule will not be applied)
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: pod1  # this ingress rule will be actual for this pod
+    - from:  # allow inbound traffic from 172.17.0.0/16 (except 172.17.1.0/24) from namespace myproject to pod app=pod1 in default namespace to ports 6379
+      - ipBlock:
+          cidr: 172.17.0.0/16  # this ingress rule will be actual for this cidr
+          except:
+          - 172.17.1.0/24  # except this one
+      - namespaceSelector:
+          matchLabels:  #
+            kubernetes.io/metadata.name: default
+          # matchExpressions:
+          # - key: kubernetes.io/metadata.name
+          #   operator: In
+          #   values: ["default"]
+      - podSelector:
+          matchLabels:
+            role: frontend
+      ports:  # this ingress rule will be actual for this ports only
+      - protocol: TCP
+        port: 6379
+        # dynamic range
+        # port: 32000
+        # endPort: 32768
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            app: pod1
+    - to:
+      - ipBlock:
+          cidr: 10.0.0.0/24
+      ports:
+      - protocol: TCP
+        port: 5978

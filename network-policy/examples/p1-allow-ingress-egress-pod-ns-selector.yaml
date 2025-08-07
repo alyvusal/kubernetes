@@ -1,0 +1,99 @@
+# This is the Pod the Network Policy’s Ingress and Egress rules will apply to.
+# Because the Ingress and Egress policy types are set but no further rules are added,
+# the policy will block all network traffic to and from the Pod.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p1-allow-ingress-pod-ns-selector
+  namespace: p1
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx-1
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:  # p1/app=curl -> nginx-1
+      - podSelector:
+          matchLabels:
+            app: curl
+    - from:  # p2/*  -> nginx-1
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: p2
+    - from:  # default/curl -> nginx-1:80
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: default
+          # matchExpressions:
+          # - key: kubernetes.io/metadata.name
+          #   operator: In
+          #   values: ["default"]
+        podSelector:
+          matchLabels:
+            app: curl
+      ports:
+      - protocol: TCP
+        port: 80
+    - from:  # allow from ingress controller
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: ingress-nginx
+        podSelector:
+          matchLabels:
+            app.kubernetes.io/name: ingress-nginx
+      ports:
+      - protocol: TCP
+        port: 80
+    # # cidr rule works if you test over ingress or from kind-worker node,
+    # # but not worked, need to add x-forwarded-for to ingress to preserve client ip
+    # - from:  # 10.0.0.0/8 -> p1/app=nginx-1:80
+    #   - ipBlock:
+    #       cidr: 0.0.0.0/0  # 192.168.0.0/24
+    #   ports:
+    #     - port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p1-allow-egress-pod-ns-selector
+  namespace: p1
+spec:
+  podSelector:
+    matchLabels:
+      app: curl
+  policyTypes:
+    - Egress
+  egress:
+    - to:  # p1/app=curl -> kube-system/app=kube-dns:53
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+      - protocol: TCP
+        port: 53
+      - protocol: UDP
+        port: 53
+    - to:  # p1/app=curl -> p1/app=nginx-1:80
+      - podSelector:
+          matchLabels:
+            app: nginx-1
+      ports:
+        - port: 80
+    - to:  # p1/app=curl -> p2/app=nginx-1
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: p2
+        podSelector:
+          matchLabels:
+            app: nginx-1
+    # # cidr rule works if you test over ingress or from kind-worker node, but not worked
+    # - to:  # p1/app=curl -> p2/app=nginx-1
+    #   - ipBlock:
+    #       cidr: 10.0.0.0/8
+    #   ports:
+    #     - port: 80

@@ -1,0 +1,16 @@
+# The following example shows how a HTTPRoute in namespace foo can reference a Service in
+# namespace bar. In this example a ReferenceGrant in the bar namespace explicitly allows
+# references to Services from HTTPRoutes in the foo namespace.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: bar
+  namespace: bar
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: foo
+  to:
+  - group: ""
+    kind: Service

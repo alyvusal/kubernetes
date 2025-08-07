@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-nginx-external-metrics
+  namespace: default
+  labels:
+    app: hpa-nginx-external-metrics
+spec:
+  selector:
+    matchLabels:
+      app: hpa-nginx-external-metrics
+  template:
+    metadata:
+      labels:
+        app: hpa-nginx-external-metrics
+    spec:
+      containers:
+      - name: hpa-nginx-external-metrics
+        image: nginx
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-nginx-external-metrics
+  namespace: default
+  labels:
+    app: hpa-nginx-external-metrics
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+  selector:
+    app: hpa-nginx-external-metrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-hpa-nginx-external-metrics
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hpa-nginx-external-metrics
+  minReplicas: 1
+  maxReplicas: 20
+  behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 2  # Default: 300
+  metrics:
+  # in output of 'kubectl get hpa' we will see TARGETS in same order as below: cpu, memory : 0/60m (avg), 56m/60m
+  - type: External
+    external:
+      metric:
+        name: pod:cpu_usage_percentage:ratio
+      target:
+        type: Utilization
+        averageValue: 0.01 # 1% = 10m
+  - type: External
+    external:
+      metric:
+        name: pod:memory_usage_percentage:ratio
+      target:
+        type: Utilization
+        averageValue: 0.1 # 10% 0.05 = 50m

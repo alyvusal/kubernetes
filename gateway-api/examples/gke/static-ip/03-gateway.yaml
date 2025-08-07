@@ -1,0 +1,31 @@
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: mygateway1-regional
+spec:
+  gatewayClassName: gke-l7-regional-external-managed
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+  addresses:
+  - type: NamedAddress
+    value: my-regional-ip1  # ip adress or name of ip adress reserved in gcloud vpc ip addresses
+
+## Documentation Links ##
+# Gateway Address
+# https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress    
+
+# Gateway Address Type
+# https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.AddressType
+
+# Create Regional Load Balancer IP
+# gcloud compute addresses create my-regional-ip1 \
+#    --region="REGION_NAME" --project=my-project-id
+
+# gcloud compute addresses create my-regional-ip1 --region="us-central1" \
+#    --project=gcplearn9 --network-tier="STANDARD"
+
+# List IP Addresss    
+# gcloud compute addresses list
+

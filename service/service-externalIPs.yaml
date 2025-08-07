@@ -1,0 +1,54 @@
+# https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.28.0/deploy/static/provider/baremetal/service-nodeport.yaml
+# you don't need it if you use metallb and deployed external load balancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  # This setting determines how traffic originating from outside the cluster is routed to the pods backing a service.
+  # It applies to services of type LoadBalancer or NodePort.
+  # Cluster: Routes traffic to any pod in the cluster, regardless of the node. Source IP is replaced.
+  # - Incoming external traffic is routed through the cluster-wide network.
+  # - Kubernetes load-balances traffic across all available pods, regardless of which node received the traffic.
+  # - Source IP addresses of external clients are not preserved; instead, the source IP is replaced by the node’s IP.
+  # - Useful when you want full load balancing across all pods.
+  # Local: Routes traffic only to pods on the same node as the request. Preserves source IP.
+  # - Incoming external traffic is routed only to pods running on the node that received the traffic.
+  # - Preserves the source IP address of external clients.
+  # - If no pod is available on the receiving node, the traffic is dropped.
+  # - Recommended for use cases requiring source IP preservation or high performance by reducing cross-node traffic.
+  externalTrafficPolicy: Local
+
+  # This setting determines how traffic originating from within the cluster is routed to the pods backing a service.
+  # It applies to ClusterIP, NodePort, and LoadBalancer services.
+  # Cluster: Routes traffic to any pod in the cluster, regardless of node.
+  # - Traffic from within the cluster is load-balanced across all pods for the service, regardless of their node location.
+  # - Useful when you want distributed access across all pods, even if they are located on different nodes.
+  # Local: Routes traffic only to pods on the same node as the source. Traffic may be dropped if no pod is local.
+  # - Traffic from within the cluster is routed only to pods on the same node as the source of the traffic.
+  # - If no pod is available locally on the same node, the traffic is dropped.
+  # - Can reduce inter-node traffic and improve performance, especially in large clusters.
+  internalTrafficPolicy: Cluster
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+  externalIPs:
+  # servername of deployment should resolve to these IPs
+  - 192.168.44.128
+  - 192.168.44.131
+  - 192.168.44.132
+---

@@ -1,0 +1,70 @@
+# use below manifest after creating snapshot
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-ebs-pv-claim-restore
+spec:
+  dataSource:
+    name: ebs-volume-snapshot
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc
+  resources:
+    requests:
+      storage: 2Gi  # snaphost is taken from 1 gb pv, during restore we can give must size
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-ebs-restored
+  name: nginx-ebs-restored
+  namespace: default
+spec:
+  ports:
+  - nodePort: 30001
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-ebs-restored
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-ebs-restored
+  name: nginx-ebs-restored
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-ebs-restored
+  template:
+    metadata:
+      labels:
+        app: nginx-ebs-restored
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx-ebs-restored
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: nginx-persistent-storage-restored
+          mountPath: /opt/data
+      volumes:
+      - name: nginx-persistent-storage-restored
+        persistentVolumeClaim:
+          claimName: nginx-ebs-pv-claim-restore

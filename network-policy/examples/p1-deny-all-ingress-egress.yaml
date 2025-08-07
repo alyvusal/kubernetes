@@ -1,0 +1,16 @@
+# This is the All Pods the Network Policy’s Ingress and Egress rules will apply to.
+# Because the Ingress and Egress policy types are set but no further rules are added,
+# the policy will block all network traffic to and from the Pod.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p1-deny-all-ingress-egress
+  namespace: p1
+spec:
+  # podSelector: {}  # it will be same effect if we enable it. applies to all pods
+  policyTypes:
+    - Ingress  # apply all deny to ingress
+    - Egress  # apply all deny to egress
+  # ingress: []  # it will be same effect if we enable it. no rule means deny all in
+  # egress: []  # it will be same effect if we enable it. no rule means deny all out
+---

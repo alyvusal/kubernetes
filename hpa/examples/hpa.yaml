@@ -1,0 +1,86 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "hpa-nginx"
+  namespace: "default"
+  labels:
+    app: "hpa-nginx"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "hpa-nginx"
+  template:
+    metadata:
+      labels:
+        app: "hpa-nginx"
+    spec:
+      containers:
+      - name: "hpa-nginx"
+        image: "nginx:latest"
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 25m
+            memory: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-nginx
+  namespace: "default"
+  labels:
+    app: "hpa-nginx"
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: "hpa-nginx"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "hpa-nginx"
+  namespace: "default"
+  labels:
+    app: "hpa-nginx"
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind: "Deployment"
+    name: "hpa-nginx"
+  minReplicas: 1
+  maxReplicas: 3
+  behavior:
+      scaleDown:
+        policies:
+        - periodSeconds: 15
+          type: Percent
+          value: 100  # Can double the current pod count.
+        selectPolicy: Max
+        stabilizationWindowSeconds: 10  # Prevents rapid scaling by waiting 10 seconds before reducing pods. (Default is 300 seconds.)
+      scaleUp:
+        policies:
+        - periodSeconds: 15
+          type: Pods
+          value: 4  #  Allows adding up to 4 pods at a time.
+        - periodSeconds: 15
+          type: Percent
+          value: 100  # Up to 100% of pods can be removed at once (meaning all pods could be removed if utilization drops significantly).
+        selectPolicy: Max  # Chooses the largest value when multiple policies apply.
+        stabilizationWindowSeconds: 0  # Prevents rapid scaling by waiting 10 seconds before reducing pods. (Default is 300 seconds.)
+  metrics:  # Defines what metrics trigger autoscaling.
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 10  #  If average CPU utilization per pod exceeds 10%, HPA scales up.
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70

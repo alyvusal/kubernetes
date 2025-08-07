@@ -1,0 +1,15 @@
+apiVersion: networking.gke.io/v1  # this feature is GKE specific
+kind: GCPBackendPolicy
+metadata:
+  name: myapp1-backend-policy
+  namespace: default
+spec:
+  default:
+    sessionAffinity:
+      type: GENERATED_COOKIE # or CLIENT_IP
+      cookieTtlSec: 50
+  targetRef:
+    # associate above setting with below resource
+    group: ""
+    kind: Service
+    name: myapp1-service

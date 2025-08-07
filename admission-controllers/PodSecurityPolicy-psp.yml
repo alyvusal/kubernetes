@@ -1,0 +1,189 @@
+# PodSecurityPolicy was deprecated in Kubernetes v1.21, and removed from Kubernetes in v1.25
+# https://kubernetes.io/docs/concepts/security/pod-security-policy/
+# https://kubernetes.io/docs/tasks/configure-pod-container/migrate-from-psp/
+# replaced with: https://kubernetes.io/docs/concepts/security/pod-security-admission/
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+spec:
+  hostIPC: false
+  hostPID: false
+  hostNetwork: false
+  hostPorts:
+  - min: 10000
+    max: 11000
+  - min: 13000
+    max: 14000
+  privileged: false
+  readOnlyRootFilesystem: true
+  runAsUser:
+    rule: RunAsAny
+    # if you want to force specific user to all pods when creating
+#    rule: MustRunAs
+#    ranges:
+#    - min: 2
+#      max: 2
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+  allowedCapabilities:
+  - SYS_TIME
+  defaultAddCapabilities:
+  - CHOWN
+  requiredDropCapabilities:
+  - SYS_ADMIN  # capability allows a range ofadministrative operations
+  - SYS_MODULE # allows loading and unloading of Linux kernel modules
+  volumes:
+  # allow use of certain volumes
+  - emptyDir
+  - configMap
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim
+
+# Likewise, you can no longer deploy pods that want to use the host''s PID,
+# IPC, or Network namespace. Also, because you set readOnlyRootFilesystem=true
+# in the policy, the container filesystems in all pods will be read-only
+# (containers can only write to volumes)
+#
+# But what happens if you deploy a pod without setting the runAsUser property,
+# but the user ID is baked into the container image (using the USER directive in the Dockerfile)?
+#
+# $ kubectl exec run-as-5 -- id
+#   uid=2(bin) gid=2(bin) groups=2(bin)
+#
+# As you can see, the container is running as user ID 2, which is the ID you specified in
+# the PodSecurityPolicy. The PodSecurityPolicy can be used to override the user ID
+# hardcoded into a container image
+---
+# default
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: default
+spec:
+  privileged: false
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+---
+# privileged
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+spec:
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:privileged
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs: ['use']
+    resourceNames:
+       - privileged
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:restricted
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs: ['use']
+    resourceNames:
+       - restricted
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:default
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs: ['use']
+    resourceNames:
+       - default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default:privileged
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  name: psp:privileged
+subjects:
+  - apiGroup: rbac.authorization.k8s.io/v1
+    kind: Group
+    name: system:masters
+  - apiGroup: rbac.authorization.k8s.io/v1
+    kind: Group
+    name: system:nodes
+  - apiGroup: rbac.authorization.k8s.io/v1
+    kind: Group
+    name: system:service-accounts:kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default:restricted
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  name: psp:restricted
+subjects:
+  - apiGroup: rbac.authorization.k8s.io/v1
+    kind: Group
+    name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default:default
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  name: psp:default
+subjects:
+  - apiGroup: rbac.authorization.k8s.io/v1
+    kind: Group
+    name: system:authenticated

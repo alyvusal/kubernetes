@@ -1,0 +1,11 @@
+app:
+  ingress:
+    enable: true
+    ingressClassName: nginx
+    hosts: [dashboard-192.168.0.100.nip.io]
+    # # pathType: Prefix
+    # issuer:
+    #   scope: disabled
+
+# kong:
+#   enabled: false

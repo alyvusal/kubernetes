@@ -1,0 +1,103 @@
+apiVersion: audit.k8s.io/v1 # This is required.
+kind: Policy
+# Don't generate audit events for all requests in RequestReceived stage.
+omitStages:
+  - "RequestReceived"
+rules:
+  # The following requests were manually identified as high-volume and low-risk,
+  # so drop them.
+  # Kube-Proxy running on each node will watch services and endpoint objects in real time
+  - level: None
+    users: ["system:kube-proxy"]
+    verbs: ["watch"]
+    resources:
+      - group: "" # core
+        resources: ["endpoints", "services"]
+  # Some health checks
+  - level: None
+    users: ["kubelet"] # legacy kubelet identity
+    verbs: ["get"]
+    resources:
+      - group: "" # core
+        resources: ["nodes"]
+  - level: None
+    userGroups: ["system:nodes"]
+    verbs: ["get"]
+    resources:
+      - group: "" # core
+        resources: ["nodes"]
+  - level: None
+    users: ["system:apiserver"]
+    verbs: ["get"]
+    resources:
+      - group: "" # core
+        resources: ["namespaces"]
+  # Some system component certificates reuse the master user, which cannot be accurately distinguished from user behavior,
+  # considering that subsequent new functions may continue to add system operations under kube-system, the cost of targeted configuration is relatively high,
+  # in terms of the overall strategy, it is not recommended (allowed) for users to operate under the kube-system,
+  # so overall drop has no direct impact on user experience
+  - level: None
+    verbs: ["get", "update"]
+    namespaces: ["kube-system"]
+  # Don't log these read-only URLs.
+  - level: None
+    nonResourceURLs:
+      - /healthz*
+      - /version
+      - /swagger*
+  # Don't log events requests.
+  - level: None
+    resources:
+      - group: "" # core
+        resources: ["events"]
+  # Don't log leases requests
+  - level: None
+    verbs: [ "get", "update" ]
+    resources:
+      - group: "coordination.k8s.io"
+        resources: ["leases"]
+  # Secrets, ConfigMaps, and TokenReviews can contain sensitive & binary data,
+  # so only log at the Metadata level.
+  - level: Metadata
+    resources:
+      - group: "" # core
+        resources: ["secrets", "configmaps"]
+      - group: authentication.k8s.io
+        resources: ["tokenreviews"]
+  # Get responses can be large; skip them.
+  - level: Request
+    verbs: ["get", "list", "watch"]
+    resources:
+      - group: "" # core
+      - group: "admissionregistration.k8s.io"
+      - group: "apps"
+      - group: "authentication.k8s.io"
+      - group: "authorization.k8s.io"
+      - group: "autoscaling"
+      - group: "batch"
+      - group: "certificates.k8s.io"
+      - group: "extensions"
+      - group: "networking.k8s.io"
+      - group: "policy"
+      - group: "rbac.authorization.k8s.io"
+      - group: "settings.k8s.io"
+      - group: "storage.k8s.io"
+  # Default level for known APIs
+  - level: RequestResponse
+    resources:
+      - group: "" # core
+      - group: "admissionregistration.k8s.io"
+      - group: "apps"
+      - group: "authentication.k8s.io"
+      - group: "authorization.k8s.io"
+      - group: "autoscaling"
+      - group: "batch"
+      - group: "certificates.k8s.io"
+      - group: "extensions"
+      - group: "networking.k8s.io"
+      - group: "policy"
+      - group: "rbac.authorization.k8s.io"
+      - group: "settings.k8s.io"
+      - group: "storage.k8s.io"
+  # Default level for all other requests.
+  - level: Metadata

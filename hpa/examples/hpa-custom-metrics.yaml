@@ -1,0 +1,127 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "hpa-nginx-custom-metrics"
+  namespace: "default"
+  labels:
+    app: "hpa-nginx-custom-metrics"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "hpa-nginx-custom-metrics"
+  template:
+    metadata:
+      labels:
+        app: "hpa-nginx-custom-metrics"
+    spec:
+      containers:
+      - image: aputra/express-073:latest
+        name: hpa-nginx-custom-metrics
+        ports:
+        - name: http
+          containerPort: 8081
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-nginx-custom-metrics
+  namespace: "default"
+  labels:
+    app: "hpa-nginx-custom-metrics"
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: "hpa-nginx-custom-metrics"
+---
+# export metrics from pod's' /metrics endpoint
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hpa-nginx-custom-metrics
+  namespace: default
+  labels:
+    app: "hpa-nginx-custom-metrics"
+    release:  kube-prometheus-stack
+spec:
+  endpoints:
+  - port: http
+    interval: 15s
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: "hpa-nginx-custom-metrics"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: "hpa-nginx-custom-metrics"
+  namespace: "default"
+  labels:
+    app: "hpa-nginx-custom-metrics"
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind: "Deployment"
+    name: "hpa-nginx-custom-metrics"
+  minReplicas: 1
+  maxReplicas: 10
+  behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 10  # Default: 300
+  metrics:
+  - type: Pods
+    pods:
+      metric:
+        # use the metric that you used above: pods/http_requests
+        name: http_requests_per_second
+      target:
+        # target 500 milli-requests per second,
+        # which is 1 request every two seconds
+        type: AverageValue
+        averageValue: 500m
+---
+# below is helm version of hpa.yaml
+# {{- if .Values.autoscaling.enabled }}
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: {{ include "app.fullname" . }}
+#   labels:
+#     {{- include "app.labels" . | nindent 4 }}
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: {{ include "app.fullname" . }}
+#   minReplicas: {{ .Values.autoscaling.minReplicas }}
+#   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+#   metrics:
+#     {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: pod:cpu_usage_percentage:ratio
+#           averageValue: {{- div .Values.autoscaling.targetCPUUtilizationPercentage 100 -}}
+#       {{- end }}
+#       {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+#     - type: Pods
+#       pods:
+#         metric:
+#           name: pod:memory_usage_percentage:ratio
+#           averageValue: {{- div .Values.autoscaling.targetMemoryUtilizationPercentage 100 -}}
+#     {{- end }}
+# {{- end }}

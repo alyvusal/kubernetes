@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-1
+  namespace: p1
+  annotations:
+    kubernetes.civo.com/loadbalancer-enable-proxy-protocol: send-proxy
+spec:
+  rules:
+  - host: nginx-192.168.0.100.nip.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: nginx-1
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

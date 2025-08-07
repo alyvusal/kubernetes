@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sleep-40-sec-job
+spec:
+  completions: 2
+  ttlSecondsAfterFinished: 5
+  activeDeadlineSeconds: 60  # Specifies the duration in seconds relative to the startTime that the job may
+                             # be continuously active before the system tries to terminate it
+  template:
+    metadata:
+      name: sleep-40-sec-job
+    spec:
+      restartPolicy: Never
+      containers:
+      # To verify this option we set sleep command inside our job to run it for 40 seconds
+      # But using activeDeadlineSeconds: 15 we can terminate the job after 15 seconds.
+      - name: sleep-40-sec-job
+        image: alpine
+        command: ["sleep", "40"]

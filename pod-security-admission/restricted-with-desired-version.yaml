@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: default  # my-restricted-namespace
+  labels:
+    # you can apply more than a single mode to a specific namespace. 
+    # This is helpful to enforce at one policy standard and warn and audit at another.
+    # In the following example Pods that violate the baseline policy won’t be allowed
+    # and Pods that violate the restricted policy will warn and audit.
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.29
+
+    # We are setting these to our _desired_ `enforce` level.
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.29
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.29

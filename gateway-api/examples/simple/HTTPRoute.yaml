@@ -1,0 +1,57 @@
+# The following HTTPRoute defines how traffic from the Gateway listener is routed to backends.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: main
+spec:
+  parentRefs:
+  - name: productpage-gw  # Define which Gateways this Route wants to be attached to
+  hostnames:
+  - "172.18.255.200.nip.io"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /reviews  # http://172.18.255.200.nip.io/reviews/0
+    backendRefs:
+    - name: reviews
+      port: 9080
+  - matches:
+    - path:
+        type: PathPrefix  # supported values: "Exact", "PathPrefix", "RegularExpression"
+        value: /ratings
+    backendRefs:
+    - name: ratings  # curl http://172.18.255.200.nip.io/ratings/0
+      port: 9080
+  - matches:
+    - path:
+        type: PathPrefix  # supported values: "Exact", "PathPrefix", "RegularExpression"
+        value: /details
+    backendRefs:
+    - name: details  # curl http://172.18.255.200.nip.io/details/0
+      port: 9080
+  # - matches:
+  #   - headers:
+  #     - name: end-user
+  #       value: jason
+  #   backendRefs:
+  #   - name: reviews-v2
+  #     port: 9080
+  # - matches:
+  #   - headers:
+  #     - type: Exact
+  #       name: env
+  #       value: canary
+  #   backendRefs:
+  #   - name: bar-svc-canary
+  #     port: 8080
+  - backendRefs:
+    - name: productpage
+      port: 9080
+      # weight: 50
+    # timeouts:
+    #   request: 500ms
+    # - name: reviews-v3
+    #   port: 9080
+    #   weight: 50
+---

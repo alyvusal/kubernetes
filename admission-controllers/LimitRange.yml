@@ -1,0 +1,45 @@
+# https://kubernetes.io/docs/concepts/policy/limit-range/
+# But remember, the limits configured in a LimitRange only apply to each individual pod/container.
+# It s still possible to create many pods and eat up all the resources available in the cluster.
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: example
+spec:
+  limits:
+  - type: Pod
+    # Specifies the limits for a pod as a whole
+    min:  # max and min define the limit range
+      cpu: 100m
+      memory: "200Mi"
+    max:
+      cpu: "300m"
+      memory: "500Mi"
+  - type: Container
+    defaultRequest:
+    # Default requests for CPU and memory that will be applied to containers that 
+    # don t specify them explicitly
+      cpu: 100m
+      memory: 100Mi
+    default:
+    # Default limits for containers that don t specify them
+      cpu: 300m
+      memory: "250Mi"
+    # Minimum and maximum requests/limits that a container can have
+    min:
+      cpu: 50m
+      memory: 5Mi
+    max:
+      cpu: 1
+      memory: 1Gi
+    maxLimitRequestRatio:
+    # Maximum ratio between the limit and request for each resource
+      cpu: 4
+      memory: 10
+  - type: PersistentVolumeClaim
+    # A LimitRange can also set the minimum and maximum amount of storage a PVC can request.
+    min:
+      storage: 1Gi 
+    max:
+      storage: 10Gi
