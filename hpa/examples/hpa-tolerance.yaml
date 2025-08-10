@@ -1,0 +1,25 @@
+# HPA Tolerance Levels is a new alpha feature in Kubernetes v1.33
+# Configure sensitiveness for scaleup and scaledown
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+...
+metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+behavior:
+  scaleDown:
+    tolerance: 0.05 # 5%
+  scaleUp:
+    tolerance: 0.01 # 1%
+
+# scaleUp: tolerance: 0.01 (1% tolerance) - This means your app will scale UP (add more pods) very aggressively.
+
+# If your pods are running at 71% CPU, the HPA will immediately add more pods because it's above the 70.7% threshold.
+
+# scaleDown: tolerance: 0.05 (5% tolerance) - This means your app will scale DOWN (remove pods) more conservatively.
+
+# if your pods are running at 67% CPU, the HPA will NOT remove pods because it's still above the 66.5% threshold.
