@@ -13,6 +13,15 @@ metadata:
 #   name: p1-deny-all-ingress
 #   namespace: p1
 # spec:
+#   podSelector: {}
+#   ingress: []
+---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: p1-deny-all-ingress
+#   namespace: p1
+# spec:
 #   podSelector: {}  # selects everything, because no label defined here
 ---
 # apiVersion: networking.k8s.io/v1
