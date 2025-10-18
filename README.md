@@ -26,7 +26,7 @@ kexplain pod
 |[StatefulSets](./statefulSets/README.md)|[Limits & Requests](./resource/README.md)|[AAA & RBAC](./aaa-rbac/README.md)|[Service](./service/README.md)|
 |[Rolling Update](./rolling-update/README.md)|[PodDisruptionBudget](./pdb/README.md)|[Network Policy](./network-policy/README.md)||
 |[Liveness, Readiness and Startup Probes (Healthchecks)](./healthcheck-and-probes/README.md)||[Audit](./audit/README.md)||
-|||||
+|[Static Pod](./static-pod/README.md)||||
 
 ## addons
 
@@ -48,10 +48,6 @@ kexplain pod
 
 ## [Sample Apps](./sample-apps/README.md)
 
-## REFERENCE
-
-- [kube-scheduler-simulator](https://github.com/kubernetes-sigs/kube-scheduler-simulator)
-
 ## Useful commands
 
 [A namespace is stuck in the Terminating state](https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=console-namespace-is-stuck-in-terminating-state)
@@ -70,3 +66,8 @@ curl pod
 ```bash
 kubectl run --rm -i --tty --image curlimages/curl curl -- sh
 ```
+
+## REFERENCE
+
+- [kube-scheduler-simulator](https://github.com/kubernetes-sigs/kube-scheduler-simulator)
+- [Glossary](https://kubernetes.io/docs/reference/glossary/?all=true)
