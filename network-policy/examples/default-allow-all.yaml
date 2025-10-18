@@ -1,0 +1,14 @@
+# By default if no rule applied, allingress and egress allowed, this rule is
+# just for demonstration
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all-in-ns
+  namespace: default
+spec:
+  podSelector: {}   # Selects all pods in this namespace
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: [{}]        # All ingress allowed
+  egress: [{}]         # All egress allowed

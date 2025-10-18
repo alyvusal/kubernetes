@@ -1,4 +1,4 @@
-# 🧩 Kubernetes NetworkPolicy
+# 🧩 [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 
 [back](../README.md)
 
@@ -59,7 +59,7 @@ Selectors determine **which Pods and traffic sources/destinations** the policy a
 
 - **Policies Are Additive (“OR’ed”)**
   - Multiple NetworkPolicies can apply to the same Pod.
-  - NetworkPolicies **do not conflict** — they are **additive**.
+  - NetworkPolicies **do not conflict** — they are **additive**. Once a pod is selected by multiple policies, all their `allow` rules are combined (unioned like yaml merge).
   - The **union of all allowed traffic** from every applicable policy defines what’s permitted.
 
 - **Order of Evaluation**
@@ -142,6 +142,8 @@ While Kubernetes provides **L3/L4 isolation**, **Cilium** extends this to **L7**
 | **Stateless Mode** | ❌ Not possible — all implementations are stateful. | ⚙️ Optional — certain Cilium modes (e.g., `allow-localhost: false`, or `toPorts` with L7 enforcement) can behave **semi-stateless** for more restrictive control. |
 | **Visibility of Connection State** | Limited — you can’t inspect or control connection state within a NetworkPolicy. | 🔍 Deep visibility with **Hubble**: you can monitor flows, states, and policy verdicts (e.g., allowed, denied, forwarded). |
 | **Effect on Return Traffic** | Always allowed automatically (implicit). | Configurable — return traffic allowed automatically unless restricted by **explicit deny rules** or **L7 filters**. |
+
+For a connection from a source pod to a destination pod to be allowed, **both** the `egress policy on the source pod` and the `ingress policy on the destination pod` need to **allow** the connection. If either side does not allow the connection, it will not happen.
 
 ---
 
@@ -344,7 +346,7 @@ ingress:
             app: demo-pod
 ```
 
-## Setting allowed port ranges
+## Setting allowed port ranges and protocol
 
 Communication is only allowed on TCP ports in the range 32000 to 32100. You can omit the `endPort` field if you only use a single port
 
