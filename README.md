@@ -32,11 +32,11 @@ kexplain pod
 
 |mixed|service-mesh|ingress|scaling|templating|
 |-|-|-|-|-|
-|[Metrics server](./addons/metrics-server/README.md)|[Istio](../istio/README.md)|[ingress-nginx](../ingress-nginx/README.md)|[KEDA](../keda/README.md)|[helm](../helm/README.md)|
-|[Dashboard](./addons/dashboard/README.md)|-|[MetalLB](../metallb/README.md)|[Karpenter](../karpenter/README.md)|[kustomize](../kustomize/README.md)|
-|[External DNS](../external-dns/README.md)||[Traefik](../traefik/README.md)|[HPA](./hpa/README.md)|[jsonnet](../jsonnet/README.md)|
-|[External Secrets](../external-secrets/README.md)||[Gateway API](./addons/gateway-api/README.md)|[VPA](./vpa/README.md)|kapitan|
-|[Sealed Secrets](../sealed-secrets/README.md)||[AWS Load Balancer Controller](../aws-loadbalancer-controller/README.md)|[Cluster Autoscaler](./autoscaler/README.md)|ksonnet|
+|[Metrics server](./addons/metrics-server/README.md)|[Istio](../istio/README.md)|[ingress-nginx](https://github.com/alyvusal/ingress-nginx)|[KEDA](https://github.com/alyvusal/keda)|[helm](https://github.com/alyvusal/helm)|
+|[Dashboard](./addons/dashboard/README.md)|-|[MetalLB](https://github.com/alyvusal/metallb)|[Karpenter](https://github.com/alyvusal/karpenter)|[kustomize](https://github.com/alyvusal/kustomize)|
+|[External DNS](https://github.com/alyvusal/external-dns)||[Traefik](https://github.com/alyvusal/traefik)|[HPA](./hpa/README.md)|[jsonnet](../jsonnet/README.md)|
+|[External Secrets](https://github.com/alyvusal/external-secrets)||[Gateway API](./addons/gateway-api/README.md)|[VPA](./vpa/README.md)|kapitan|
+|[Sealed Secrets](https://github.com/alyvusal/sealed-secrets)||[AWS Load Balancer Controller](https://github.com/alyvusal/aws-loadbalancer-controller)|[Cluster Autoscaler](./autoscaler/README.md)|ksonnet|
 |||||dockerize|
 |||||kubecfg|
 
