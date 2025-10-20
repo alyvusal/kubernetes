@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readonly-pod-emptydir
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 2000
+    fsGroup: 3000
+    supplementalGroups: [4000]
+    fsGroupChangePolicy: "OnRootMismatch"  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#configure-volume-permission-and-ownership-change-policy-for-pods
+    supplementalGroupsPolicy: Strict  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#supplementalgroupspolicy
+  containers:
+    - name: busybox
+      image: busybox:1.37
+      command: [ "sleep", "1h" ]
+      securityContext:
+        procMount: Unmasked
+        seccompProfile:
+          type: RuntimeDefault
+        appArmorProfile:
+          type: RuntimeDefault
+        # seLinuxOptions:
+        #   level: "s0:c123,c456"
+        runAsUser: 1000  # if privileged:true then it will have all permissions even user id is 1000
+        readOnlyRootFilesystem: true  # Mounts the container's root filesystem as read-only.
+        capabilities:
+          add: ["NET_ADMIN", "SYS_TIME"]
+          drop:
+            - ALL
+        privileged: false  # grants the container almost all capabilities if true
+        allowPrivilegeEscalation: false  # Controls whether a process can gain more privileges than its parent process.
+        # This bool directly controls whether the no_new_privs flag gets set on the container process.
+        # allowPrivilegeEscalation is always true when the container: is run as privileged, or has CAP_SYS_ADMIN
+      volumeMounts:
+        - name: tmp-storage
+          mountPath: /tmp
+  volumes:
+    - name: tmp-storage
+      emptyDir: {}

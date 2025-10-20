@@ -26,7 +26,7 @@ kexplain pod
 |[StatefulSets](./statefulSets/README.md)|[Limits & Requests](./resource/README.md)|[AAA & RBAC](./aaa-rbac/README.md)|[Service](./service/README.md)|
 |[Rolling Update](./rolling-update/README.md)|[PodDisruptionBudget](./pdb/README.md)|[Network Policy](./network-policy/README.md)||
 |[Liveness, Readiness and Startup Probes (Healthchecks)](./healthcheck-and-probes/README.md)||[Audit](./audit/README.md)||
-|[Static Pod](./static-pod/README.md)||||
+|[Static Pod](./static-pod/README.md)||[Security Context](./privileged-pods-securityContext/README.md)||
 
 ## addons
 
