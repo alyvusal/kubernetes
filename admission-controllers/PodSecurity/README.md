@@ -1,6 +1,10 @@
 # [Pod Security Admission](https://kubernetes.io/docs/concepts/security/pod-security-admission/)
 
-Enforce the [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/). Pod security restrictions are applied at the namespace level when pods are created
+Enforce the [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) with [Pod Security Admission Controller (PSA)](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#podsecurity). Pod security restrictions are applied at the namespace level when pods are created
+
+[Configure PSA controller](https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-admission-controller/) and specify via the `--admission-control-config-file` to kube-apiserver.
+
+Custom standards could be defined with [Kyverno](https://github.com/alyvusal/kyverno)
 
 Kubernetes defines a set of labels (modes) that you can set to define which of the predefined Pod Security Standard levels you want to use for a namespace
 
@@ -16,7 +20,7 @@ Kubernetes defines a set of labels (modes) that you can set to define which of t
 pod-security.kubernetes.io/<MODE>: <LEVEL>
 
 # Optional: per-mode version label that can be used to pin the policy to the
-# version that shipped with a given Kubernetes minor version (for example v1.31).
+# version that shipped with a given Kubernetes minor version (for example v1.34).
 #
 # MODE must be one of `enforce`, `audit`, or `warn`.
 # VERSION must be a valid Kubernetes minor version, or `latest`.
@@ -29,16 +33,14 @@ pod-security.kubernetes.io/<MODE>-version: <VERSION>
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: my-baseline-namespace
+  name: my-apps-namespace
   labels:
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/enforce-version: v1.31
-
-    # We are setting these to our _desired_ `enforce` level.
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/audit-version: v1.31
-    pod-security.kubernetes.io/warn: restricted
-    pod-security.kubernetes.io/warn-version: v1.31
+    pod-security.kubernetes.io/enforce: privileged  # allow
+    pod-security.kubernetes.io/enforce-version: v1.34
+    pod-security.kubernetes.io/warn: baseline       # show user in cli
+    pod-security.kubernetes.io/warn-version: v1.34
+    pod-security.kubernetes.io/audit: restricted    # log in audit-logs
+    pod-security.kubernetes.io/audit-version: v1.34
 ```
 
 ## [Apply Pod Security Standards at the Cluster Level](https://kubernetes.io/docs/tutorials/security/cluster-level-pss/)
@@ -67,3 +69,4 @@ Warning: would violate PodSecurity "restricted:latest": privileged (container "n
 - [Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller](https://kubernetes.io/docs/tasks/configure-pod-container/migrate-from-psp/)
 - [Enforcing Pod Security Standards](https://kubernetes.io/docs/setup/best-practices/enforcing-pod-security-standards/)
 - [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- [kube-image-bouncer: Custom controller to reject pods with latest tag](https://github.com/flavio/kube-image-bouncer)

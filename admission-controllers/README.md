@@ -3,11 +3,10 @@
 [back](../README.md)
 
 - [Admission Controllers Reference](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/)
-- [Dynamic Admission Control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+- [Dynamic Admission Controllers](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) (see types for each)
 - [A Guide to Kubernetes Admission Controllers](https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admission-controllers/)
 - [Validating Admission Policy](https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/)
 
-![img](./img/admission-controller.png "Request evaulation order")
 Admission controll webhooks:
 
 - **MutatingAdmissionWebhook**: Modify request (inject sidecar, change user, add label etc.)
