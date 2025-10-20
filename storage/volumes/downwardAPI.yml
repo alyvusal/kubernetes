@@ -20,6 +20,8 @@ metadata:
   labels:
     volume: projected
 spec:
+  erviceAccountName: my-sa
+  automountServiceAccountToken: false
   containers:
   - name: container-test
     image: busybox:1.28
@@ -42,6 +44,8 @@ spec:
           items:
             - key: config
               path: my-group/my-config
+      # sa will not miunt under /var/run/secrets/kubernetes.io/serviceaccount/token anymore
+      # new localtion is /projected-volume/token
       - serviceAccountToken:
           audience: api
           expirationSeconds: 3600

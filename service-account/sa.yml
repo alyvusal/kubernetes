@@ -1,50 +1,75 @@
 apiVersion: v1
-kind: ServiceAccount
+kind: Secret
 metadata:
-  name: my-service-account
-  namespace: default
+  name: my-docker-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJkb2NrZXJodWIuY29tIjp7InVzZXJuYW1lIjoiRFVNTVlfVVNFUk5BTUUiLCJwYXNzd29yZCI6IkRVTU1ZX0RPQ0tFUl9QQVNTV09SRCIsImVtYWlsIjoiRFVNTVlfRE9DS0VSX0VNQUlMIiwiYXV0aCI6IlJGVk5UVmxmVlZORlVrNUJUVVU2UkZWTlRWbGZSRTlEUzBWU1gxQkJVMU5YVDFKRSJ9fX0=
 ---
-# creating secret not recommended
 apiVersion: v1
 kind: Secret
 metadata:
-  name: my-long-lived-secret
+  name: my-app-secret
+data:
+  .app.json: e30=
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-sa
+automountServiceAccountToken: false  # Disable token mount in sa level, can be overridden at the pod level.
+secrets:  # Secrets is a list of the secrets in the same namespace that pods running using this ServiceAccount are allowed to use
+- name: my-app-secret
+imagePullSecrets:  # for image pull
+  - name: my-docker-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-sa-long-lived-token
   annotations:
-    kubernetes.io/service-account.name: my-service-account
+    kubernetes.io/service-account.name: my-sa  # special annotation,
 type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: my-sa-role
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: my-service-account
-  namespace: default
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: view
+  name: app-binding
 subjects:
-- kind: ServiceAccount
-  name: my-service-account
-  namespace: default
+  - kind: ServiceAccount
+    name: my-sa
+roleRef:
+  kind: Role
+  name: my-sa-role
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   name: sa-pod
 spec:
-  serviceAccount: my-service-account  # this will be deprecated
-  serviceAccountName: my-service-account
-  automountServiceAccountToken: true  # default: true
+  # serviceAccount: my-sa  # this will be deprecated, now it is alis for serviceAccountName
+  serviceAccountName: my-sa
+  automountServiceAccountToken: true  # override SA automount option
   containers:
   - name: my-container
     image: nginx:alpine
     volumeMounts:
-    - mountPath: /var/run/secrets/tokens
+    - mountPath: /my-proj-vol
       name: my-proj-vol
   volumes:
   - name: my-proj-vol
     projected:
       sources:
       - serviceAccountToken:
-          path: my-proj-vol
-          expirationSeconds: 600 #specify the desired epiration time in seconds
+          path: sa-token
+          expirationSeconds: 600 # specify the desired epiration time in seconds

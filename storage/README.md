@@ -32,7 +32,7 @@ Setting accessModes in a PV tells Kubernetes how this storage resource can be us
 
 ### [Projected Volumes](https://kubernetes.io/docs/concepts/storage/projected-volumes/)
 
-A projected volume maps several existing volume sources into the same directory.
+A projected volume is a composite volume — it lets you combine multiple volume sources (e.g., secrets, configMaps, serviceAccountToken, downwardAPI) into a single volume mount point.
 
 Currently, the following types of volume sources can be projected:
 
@@ -41,6 +41,36 @@ Currently, the following types of volume sources can be projected:
 - [configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap)
 - [serviceAccountToken](https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken)
 - [clusterTrustBundle](https://kubernetes.io/docs/concepts/storage/projected-volumes/#clustertrustbundle)
+
+DevSecOps & Security Notes:
+
+- projected.serviceAccountToken is not the same as the Pod’s default token.
+- It allows you to project a short-lived (rotatable) token for finer-grained access control.
+- Useful for workload identity and least privilege design.
+- Keeps mount directories clean (e.g., /etc/config instead of multiple submounts).
+
+Before projected volumes introduced serviceAccountToken projection:
+
+- Every Pod automatically got a long-lived token (until Pod deletion)
+- The token had cluster-wide permissions for that ServiceAccount
+- Tokens weren’t auto-rotated, posing security risks
+
+The projected.serviceAccountToken solved this:
+
+```yaml
+serviceAccountToken:
+  path: token
+  expirationSeconds: 3600
+  audience: "vault"
+```
+
+✅ Benefits:
+
+- Token is short-lived and auto-rotated
+- Scoped to a specific audience (Vault, external service, etc.)
+- No default mounting — you explicitly opt in
+
+This was a huge security improvement that required the projected mechanism (couldn’t be done with old secret or configMap volume types).
 
 ```bash
 host $ kubectl exec -it projected-volume-test -- sh
