@@ -120,6 +120,15 @@ kubectl apply -f examples/vpa-auto.yml
 watch -n1 "kubectl describe pod -l app=vpa-auto-ubuntu-stress | grep Limits -A 5 && kubectl get vpa && kubectl top pods"
 ```
 
+Helm chart for VPA: [vpa](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/charts/vertical-pod-autoscaler)
+
+```bash
+helm repo add autoscalers https://kubernetes.github.io/autoscaler
+helm upgrade -i vertical-pod-autoscaler autoscalers/vertical-pod-autoscaler \
+  -n kube-system \
+  --version 0.11.0
+```
+
 ## Per container policy
 
 ```yaml

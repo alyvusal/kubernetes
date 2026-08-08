@@ -37,10 +37,11 @@ spec:
     kind: Deployment
     name: vpa-ubuntu-stress
   updatePolicy:
-    # Off — VPA will only provide the recommendations, and it will not automatically change resource requirements.
-    # Initial — VPA only assigns resource requests on pod creation and never changes them later.
-    # Recreate — VPA assigns resource requests on pod creation time and updates them on existing pods by evicting and recreating them.
-    # Auto mode — It recreates the pod based on the recommendation.
+    # VPA mode	What happens
+    # Off	Recommendation only; no pod changes
+    # Initial	New pods get VPA resources; existing pods unchanged
+    # Recreate	VPA evicts/recreates pods when resources need changing
+    # Auto	Historically equivalent to Recreate; current behavior should be checked for your Kubernetes/VPA version
     updateMode: "Auto"
   resourcePolicy:
     containerPolicies:
@@ -52,3 +53,4 @@ spec:
           cpu: 300m  # maximum vpa will be allocating this many cpus even if demand is higher.
           memory: 300Mi
         controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsOnly # or RequestsAndLimits
