@@ -26,23 +26,21 @@ This version of the API is has GA level support for the following resources:
 
 ```bash
 kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
-  { kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml; }
+  { kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml; }
 # or
-kubectl apply -k "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.2.0"
+kubectl apply -k "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.6.1"
 ```
 
-Install Experimental Channel
+[Install Experimental Channel](https://gateway-api.sigs.k8s.io/geps/by-state/experimental/)
 
 ```bash
-kubectl apply -k "github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=v1.2.0"
+kubectl apply -k "github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=v1.6.1"
 
 # to check exp features
 $ meld https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/heads/main/config/crd/kustomization.yaml https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/heads/main/config/crd/experimental/kustomization.yaml
-- gateway.networking.k8s.io_udproutes.yaml
-- gateway.networking.k8s.io_tcproutes.yaml
-- gateway.networking.k8s.io_tlsroutes.yaml
-- gateway.networking.k8s.io_backendtlspolicies.yaml
-- gateway.networking.k8s.io_backendlbpolicies.yaml
+- gateway.networking.x-k8s.io_xbackends.yaml
+- gateway.networking.x-k8s.io_xbackendtrafficpolicies.yaml
+- gateway.networking.x-k8s.io_xmeshes.yaml
 ```
 
 Install [nginx gateway cotnroller](https://gateway-api.sigs.k8s.io/implementations/#nginx-gateway-fabric)

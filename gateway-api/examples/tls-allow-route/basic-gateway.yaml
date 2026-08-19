@@ -1,0 +1,24 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: cilium
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: web-gw
+    allowedRoutes:
+      namespaces:
+        # from is FromNamespaces: All | Selector | Same | None
+        # Default is Same. Use All (or Selector) so gamma-ns HTTPRoutes can attach.
+        from: Same
+        # selector:           # required only when from: Selector
+        #   matchLabels:
+        #     kubernetes.io/metadata.name: gamma-ns
+
+# All: Routes in every namespace may attach to this Gateway.
+# Selector: only Routes in namespaces matching selector may attach.
+# Same: only Routes in the Gateway's own namespace may attach (default).
+# None: no Routes may attach.

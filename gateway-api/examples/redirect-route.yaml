@@ -1,0 +1,57 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: redirect-path
+spec:
+  parentRefs:
+  - name: my-gateway
+  rules:
+  # rewrites the path prefix while preserving the hostname and protocol
+  # curl -l -v "http://$GATEWAY/original-prefix"
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /original-prefix
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /replacement-prefix
+  # changes both the hostname and the path
+  # curl -l -v "http://$GATEWAY/path-and-host"
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /path-and-host
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        hostname: example.org
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /replacement-prefix
+  # change the HTTP status code returned by the redirect
+  # curl -l -v "http://$GATEWAY/path-and-status
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /path-and-status
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /replacement-prefix
+        statusCode: 301
+  # change the scheme (protocol) to redirect from HTTP to HTTPS
+  # curl -l -v "http://$GATEWAY/scheme-and-host"
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /scheme-and-host
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        hostname: example.org
+        scheme: "https"

@@ -1,0 +1,57 @@
+# Gateway API for Mesh Management and Administration (GAMMA)
+# GAMMA allows HTTPRoute objects to
+# bind directly to Kubernetes services instead of Gateways.
+
+# When GAMMA is the right (only) choice
+# Use parentRefs.kind: Service when in-cluster callers already use http://echo/...
+# and you do not want them to go through a Gateway. GAMMA does not replace
+# Gateway routing; it applies HTTPRoute to Service traffic.
+
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: cilium
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: web-gw
+    allowedRoutes:
+      namespaces:
+        from: All  # Same (intra ns), All (inter ns)
+
+# All: Routes in all namespaces may be used by this Gateway.
+# Selector: Routes in namespaces selected by the selector may be used by this Gateway.
+# Same: Only Routes in the same namespace may be used by this Gateway.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gamma-route
+  namespace: gamma-ns
+spec:
+  parentRefs:
+  # Inter cluster traffic (GAMMA) east-west
+  - kind: Service
+    name: echo
+  # From external traffic to internal traffic (North-South) with gateway
+  - name: my-gateway
+    namespace: default
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v1
+    backendRefs:
+    - name: echo-v1
+      port: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2
+    backendRefs:
+    - name: echo-v2
+      port: 80

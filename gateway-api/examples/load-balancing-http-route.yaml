@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: load-balancing-route
+spec:
+  parentRefs:
+  - name: my-gateway
+    namespace: default
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /echo
+    backendRefs:
+    - kind: Service
+      name: echo-1
+      port: 8080
+      # weight: 80
+    - kind: Service
+      name: echo-2
+      port: 8090
+      # weight: 20
+
+
+# for _ in {1..1000}; do
+#   curl -s "http://$GATEWAY/echo" >> curlresponses.txt
+# done
+
+# grep -o "Request served by echo-." curlresponses.txt | sort | uniq -c
