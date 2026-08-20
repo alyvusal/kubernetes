@@ -24,7 +24,7 @@ kexplain pod
 |[CronJob](./cronJob/README.md)|[Secret](./secret/README.md)|[Pod Security Admission](./pod-security-admission/README.md)|[Headless service](./headless-service/README.md)|
 |[initContainer](./initContainers/README.md)|[Storage & Volume](./storage/README.md)|[Service Account](./service-account/README.md)|[CNI](./cni/README.md)|
 |[StatefulSets](./statefulSets/README.md)|[Limits & Requests](./resource/README.md)|[AAA & RBAC](./aaa-rbac/README.md)|[Service](./service/README.md)|
-|[Rolling Update](./rolling-update/README.md)|[PodDisruptionBudget](./pdb/README.md)|[Network Policy](./network-policy/README.md)||
+|[Rolling Update](./rolling-update/README.md)|[PodDisruptionBudget](./pdb/README.md)|[Network Policy](./network-policy/README.md)|[NodeLocal DNS Cache](./local-dns-cache/README.md)|
 |[Liveness, Readiness and Startup Probes (Healthchecks)](./healthcheck-and-probes/README.md)||[Audit](./audit/README.md)||
 |[Static Pod](./static-pod/README.md)||[Security Context](./privileged-pods-securityContext/README.md)||
 
@@ -71,3 +71,5 @@ kubectl run --rm -i --tty --image curlimages/curl curl -- sh
 
 - [kube-scheduler-simulator](https://github.com/kubernetes-sigs/kube-scheduler-simulator)
 - [Glossary](https://kubernetes.io/docs/reference/glossary/?all=true)
+- [Node Local DNS Cache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns)
+  - Monitor with grafana dashboard
